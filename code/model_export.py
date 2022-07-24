@@ -40,11 +40,6 @@ def parse_args():
 
   return parser.parse_args()
 
-
-def export_to_onnx(args):
-  pass
-
-
 def export_to_onnx(args):
 
   print(f'[trace] start to export to onnx model file:')
@@ -53,7 +48,7 @@ def export_to_onnx(args):
 
   if not os.path.exists(full_pth_path):
     print(f'[trace] target file {full_pth_path} not exist, exit...')
-    exit(-1)
+    return
 
   device = torch.device("cuda")
   model = nn_structure.classify()
