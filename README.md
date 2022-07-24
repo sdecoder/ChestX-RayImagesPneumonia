@@ -33,8 +33,7 @@
     <img src="resources/header.png" alt="Logo">
   </a>
 
-  <h3 align="center">Cassava Leaf Disease Classification</h3>
-
+  <h3 align="center">Chest X-Ray Images (Pneumonia)</h3>
   <!--
   <p align="center">
     An awesome README template to jumpstart your projects!
@@ -87,15 +86,15 @@
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 -->
 
-As the second-largest provider of carbohydrates in Africa, cassava is a key food security crop grown by smallholder farmers because it can withstand harsh conditions. At least 80% of household farms in Sub-Saharan Africa grow this starchy root, but viral diseases are major sources of poor yields. With the help of data science, it may be possible to identify common diseases so they can be treated.
+The dataset is organized into 3 folders (train, test, val) and contains subfolders for each image category (Pneumonia/Normal). There are 5,863 X-Ray images (JPEG) and 2 categories (Pneumonia/Normal).
 
-Existing methods of disease detection require farmers to solicit the help of government-funded agricultural experts to visually inspect and diagnose the plants. This suffers from being labor-intensive, low-supply and costly. As an added challenge, effective solutions for farmers must perform well under significant constraints, since African farmers may only have access to mobile-quality cameras with low-bandwidth.
+Chest X-ray images (anterior-posterior) were selected from retrospective cohorts of pediatric patients of one to five years old from Guangzhou Women and Children’s Medical Center, Guangzhou. All chest X-ray imaging was performed as part of patients’ routine clinical care.
 
-In this competition, we introduce a dataset of 21,367 labeled images collected during a regular survey in Uganda. Most images were crowdsourced from farmers taking photos of their gardens, and annotated by experts at the National Crops Resources Research Institute (NaCRRI) in collaboration with the AI lab at Makerere University, Kampala. This is in a format that most realistically represents what farmers would need to diagnose in real life.
+For the analysis of chest x-ray images, all chest radiographs were initially screened for quality control by removing all low quality or unreadable scans. The diagnoses for the images were then graded by two expert physicians before being cleared for training the AI system. In order to account for any grading errors, the evaluation set was also checked by a third expert.
 
-Your task is to classify each cassava image into four disease categories or a fifth category indicating a healthy leaf. With your help, farmers may be able to quickly identify diseased plants, potentially saving their crops before they inflict irreparable damage.
-
-Source: https://www.kaggle.com/c/cassava-leaf-disease-classification
+Source:
+* Identifying Medical Diagnoses and Treatable Diseases by Image-Based Deep Learning: http://www.cell.com/cell/fulltext/S0092-8674(18)30154-5
+* https://www.kaggle.com/c/cassava-leaf-disease-classification
 
 ### Prerequisites
 
