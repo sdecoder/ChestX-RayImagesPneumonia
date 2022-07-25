@@ -33,7 +33,7 @@
     <img src="resources/banner.png" alt="Logo">
   </a>
 
-  <h3 align="center">Chest X-Ray Images (Pneumonia)</h3>
+<h3 align="center">Chest X-Ray Images (Pneumonia)</h3>
   <!--
   <p align="center">
     An awesome README template to jumpstart your projects!
@@ -80,36 +80,46 @@
 
 
 <!-- ABOUT THE PROJECT -->
+
 ## About The Project
 
 <!--
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 -->
 
-The dataset is organized into 3 folders (train, test, val) and contains subfolders for each image category (Pneumonia/Normal). There are 5,863 X-Ray images (JPEG) and 2 categories (Pneumonia/Normal).
+The dataset is organized into 3 folders (train, test, val) and contains subfolders for each image category (
+Pneumonia/Normal). There are 5,863 X-Ray images (JPEG) and 2 categories (Pneumonia/Normal).
 
-Chest X-ray images (anterior-posterior) were selected from retrospective cohorts of pediatric patients of one to five years old from Guangzhou Women and Children’s Medical Center, Guangzhou. All chest X-ray imaging was performed as part of patients’ routine clinical care.
+Chest X-ray images (anterior-posterior) were selected from retrospective cohorts of pediatric patients of one to five
+years old from Guangzhou Women and Children’s Medical Center, Guangzhou. All chest X-ray imaging was performed as part
+of patients’ routine clinical care.
 
-For the analysis of chest x-ray images, all chest radiographs were initially screened for quality control by removing all low quality or unreadable scans. The diagnoses for the images were then graded by two expert physicians before being cleared for training the AI system. In order to account for any grading errors, the evaluation set was also checked by a third expert.
+For the analysis of chest x-ray images, all chest radiographs were initially screened for quality control by removing
+all low quality or unreadable scans. The diagnoses for the images were then graded by two expert physicians before being
+cleared for training the AI system. In order to account for any grading errors, the evaluation set was also checked by a
+third expert.
 
 Source:
-* Identifying Medical Diagnoses and Treatable Diseases by Image-Based Deep Learning: http://www.cell.com/cell/fulltext/S0092-8674(18)30154-5
+
+* Identifying Medical Diagnoses and Treatable Diseases by Image-Based Deep
+  Learning: http://www.cell.com/cell/fulltext/S0092-8674(18)30154-5
 * https://www.kaggle.com/c/cassava-leaf-disease-classification
 
 ### Prerequisites
 
 Hardware platform:
+
 * NVIDIA Tesla M40 24GB for inference usage
 * AMD 6900XT 16GB for Pytorch ROCm[HIP] for training usage
 
 Software platform:
+
 * NVIDIA SDK: TensorRT/CUDA/CuDNN
 * Python environment: Anaconda
 * Deep learning framework: Pytorch
 * OS: Arch Linux
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 ## Workflow
 
@@ -133,16 +143,16 @@ input_data = torch.randn(batch_size, 1, 224, 224, requires_grad=True)
 output_data = torch_model(input)
 output_file_name = "target.onnx"
 # Export the model
-torch.onnx.export(torch_model,               # model being run
-                  input_data,                         # model input (or a tuple for multiple inputs)
-                  output_file_name,   # where to save the model (can be a file or file-like object)
-                  export_params=True,        # store the trained parameter weights inside the model file
-                  opset_version=10,          # the ONNX version to export the model to
+torch.onnx.export(torch_model,  # model being run
+                  input_data,  # model input (or a tuple for multiple inputs)
+                  output_file_name,  # where to save the model (can be a file or file-like object)
+                  export_params=True,  # store the trained parameter weights inside the model file
+                  opset_version=10,  # the ONNX version to export the model to
                   do_constant_folding=True,  # whether to execute constant folding for optimization
-                  input_names = ['input'],   # the model's input names
-                  output_names = ['output'], # the model's output names
-                  dynamic_axes={'input' : {0 : 'batch_size'},    # variable length axes
-                                'output' : {0 : 'batch_size'}})
+                  input_names=['input'],  # the model's input names
+                  output_names=['output'],  # the model's output names
+                  dynamic_axes={'input': {0: 'batch_size'},  # variable length axes
+                                'output': {0: 'batch_size'}})
 
 ```
 
@@ -151,13 +161,18 @@ The following snippet is used to load the .onnx file and use it as the inference
 
 ```python
 import onnx
+
 onnx_model = onnx.load("super_resolution.onnx")
 onnx.checker.check_model(onnx_model)
 
 import onnxruntime
+
 ort_session = onnxruntime.InferenceSession("super_resolution.onnx")
+
+
 def to_numpy(tensor):
-    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+  return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+
 
 # compute ONNX Runtime output prediction
 ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(x)}
@@ -169,6 +184,7 @@ print("Exported model has been tested with ONNXRuntime, and the result looks goo
 ```
 
 ### Export to TensorRT engine file
+
 Once the conversion and validation for the .onnx file is done,
 we can convert it to the TensorRT engine at this point.
 Once the TensorRT engine is generated, we run the test again to make sure its precision keeps.
@@ -177,10 +193,11 @@ In our experiment setup, all INT8/FP16/TF32/FP32 configuration remains at 99% pr
 Note: If the selected precision is INT8, the calibrator dataset should be provided.
 
 ### Engine file size comparison
-* efficientnet_b4_ns.FP16.engine = 70M
-* efficientnet_b4_ns.FP32.engine = 71M
-* efficientnet_b4_ns.INT8.engine = 72M
-* efficientnet_b4_ns.TF32.engine = 71M
+
+* classifier-sim.INT8.engine = 6.3M
+* classifier-sim.FP16.engine = 3.2M
+* classifier-sim.FP32.engine = 3.2M
+* classifier-sim.TF32.engine = 3.2M
 
 ### Performance evaluation
 
@@ -188,104 +205,98 @@ The performance evaluation is done using a Tesla M40 card.
 Corresponding specification can be found here:
 https://www.techpowerup.com/gpu-specs/tesla-m40-24-gb.c3838
 
-
-
 1. for the INT8 throughput:
+
 ```shell
-trtexec --loadEngine=efficientnet_b4_ns.INT8.engine --batch=8192 --streams=8 --verbose --avgRuns=10
-[07/24/2022-22:56:49] [I] === Performance summary ===
-[07/24/2022-22:56:49] [I] Throughput: 37538.6 qps
-[07/24/2022-22:56:49] [I] Latency: min = 852.214 ms, max = 1882.35 ms, mean = 1671.06 ms, median = 1755.81 ms, percentile(99%) = 1882.35 ms
-[07/24/2022-22:56:49] [I] Enqueue Time: min = 0.960327 ms, max = 446.976 ms, mean = 12.8272 ms, median = 1.01074 ms, percentile(99%) = 446.976 ms
-[07/24/2022-22:56:49] [I] H2D Latency: min = 16.5605 ms, max = 115.081 ms, mean = 39.1974 ms, median = 17.144 ms, percentile(99%) = 115.081 ms
-[07/24/2022-22:56:49] [I] GPU Compute Time: min = 835.549 ms, max = 1768.13 ms, mean = 1631.84 ms, median = 1734.03 ms, percentile(99%) = 1768.13 ms
-[07/24/2022-22:56:49] [I] D2H Latency: min = 0.00561523 ms, max = 0.0610352 ms, mean = 0.0146191 ms, median = 0.0117188 ms, percentile(99%) = 0.0610352 ms
-[07/24/2022-22:56:49] [I] Total Host Walltime: 17.2401 s
-[07/24/2022-22:56:49] [I] Total GPU Compute Time: 128.916 s
-[07/24/2022-22:56:49] [W] * GPU compute time is unstable, with coefficient of variance = 14.8214%.
-[07/24/2022-22:56:49] [W]   If not already in use, locking GPU clock frequency or adding --useSpinWait may improve the stability.
-[07/24/2022-22:56:49] [I] Explanations of the performance metrics are printed in the verbose logs.
-
-
+trtexec --loadEngine=classifier-sim.INT8.engine --batch=8192 --streams=8 --verbose --avgRuns=10
+[07/25/2022-19:02:56] [I] === Performance summary ===
+[07/25/2022-19:02:56] [I] Throughput: 2.54521e+06 qps
+[07/25/2022-19:02:56] [I] Latency: min = 9.47876 ms, max = 51.4163 ms, mean = 16.5801 ms, median = 11.6239 ms, percentile(99%) = 47.6256 ms
+[07/25/2022-19:02:56] [I] Enqueue Time: min = 0.00854492 ms, max = 0.0578613 ms, mean = 0.012563 ms, median = 0.00976562 ms, percentile(99%) = 0.0471191 ms
+[07/25/2022-19:02:56] [I] H2D Latency: min = 3.12537 ms, max = 44.6831 ms, mean = 9.18409 ms, median = 4.26877 ms, percentile(99%) = 40.4702 ms
+[07/25/2022-19:02:56] [I] GPU Compute Time: min = 5.99756 ms, max = 9.45909 ms, mean = 7.35231 ms, median = 7.1825 ms, percentile(99%) = 9.2168 ms
+[07/25/2022-19:02:56] [I] D2H Latency: min = 0.00561523 ms, max = 0.0736084 ms, mean = 0.0437097 ms, median = 0.0429077 ms, percentile(99%) = 0.0670166 ms
+[07/25/2022-19:02:56] [I] Total Host Walltime: 3.07697 s
+[07/25/2022-19:02:56] [I] Total GPU Compute Time: 7.02881 s
+[07/25/2022-19:02:56] [W] * GPU compute time is unstable, with coefficient of variance = 7.58229%.
+[07/25/2022-19:02:56] [W]   If not already in use, locking GPU clock frequency or adding --useSpinWait may improve the stability.
+[07/25/2022-19:02:56] [I] Explanations of the performance metrics are printed in the verbose logs.
 ```
+
 2. for the FP16 throughput:
 
 ```shell
-trtexec --loadEngine=efficientnet_b4_ns.FP16.engine --batch=8192 --streams=8 --verbose --avgRuns=10
-[07/24/2022-22:58:54] [I] === Performance summary ===
-[07/24/2022-22:58:54] [I] Throughput: 45453.9 qps
-[07/24/2022-22:58:54] [I] Latency: min = 459.32 ms, max = 1587.09 ms, mean = 1353.2 ms, median = 1446.63 ms, percentile(99%) = 1587.09 ms
-[07/24/2022-22:58:54] [I] Enqueue Time: min = 1.09277 ms, max = 680.736 ms, mean = 18.5081 ms, median = 1.17969 ms, percentile(99%) = 680.736 ms
-[07/24/2022-22:58:54] [I] H2D Latency: min = 16.8507 ms, max = 115.957 ms, mean = 38.6342 ms, median = 17.2344 ms, percentile(99%) = 115.957 ms
-[07/24/2022-22:58:54] [I] GPU Compute Time: min = 442.143 ms, max = 1471.2 ms, mean = 1314.55 ms, median = 1421.78 ms, percentile(99%) = 1471.2 ms
-[07/24/2022-22:58:54] [I] D2H Latency: min = 0.00585938 ms, max = 0.0742188 ms, mean = 0.0206005 ms, median = 0.015625 ms, percentile(99%) = 0.0742188 ms
-[07/24/2022-22:58:54] [I] Total Host Walltime: 14.2379 s
-[07/24/2022-22:58:54] [I] Total GPU Compute Time: 103.849 s
-[07/24/2022-22:58:54] [W] * GPU compute time is unstable, with coefficient of variance = 19.1136%.
-[07/24/2022-22:58:54] [W]   If not already in use, locking GPU clock frequency or adding --useSpinWait may improve the stability.
-[07/24/2022-22:58:54] [I] Explanations of the performance metrics are printed in the verbose logs.
-
+trtexec --loadEngine=classifier-sim.FP16.engine --batch=8192 --streams=8 --verbose --avgRuns=10
+[07/25/2022-19:03:30] [I] Throughput: 2.5563e+06 qps
+[07/25/2022-19:03:30] [I] Latency: min = 9.49252 ms, max = 52.554 ms, mean = 16.9202 ms, median = 12.3535 ms, percentile(99%) = 47.1478 ms
+[07/25/2022-19:03:30] [I] Enqueue Time: min = 0.0170898 ms, max = 0.116455 ms, mean = 0.0237389 ms, median = 0.0185547 ms, percentile(99%) = 0.0854492 ms
+[07/25/2022-19:03:30] [I] H2D Latency: min = 3.13013 ms, max = 45.7395 ms, mean = 9.50471 ms, median = 4.79257 ms, percentile(99%) = 40.3545 ms
+[07/25/2022-19:03:30] [I] GPU Compute Time: min = 5.99194 ms, max = 9.51074 ms, mean = 7.37206 ms, median = 7.18329 ms, percentile(99%) = 9.13654 ms
+[07/25/2022-19:03:30] [I] D2H Latency: min = 0.00585938 ms, max = 0.0742798 ms, mean = 0.0433958 ms, median = 0.0419922 ms, percentile(99%) = 0.0671387 ms
+[07/25/2022-19:03:30] [I] Total Host Walltime: 3.05081 s
+[07/25/2022-19:03:30] [I] Total GPU Compute Time: 7.0182 s
+[07/25/2022-19:03:30] [W] * GPU compute time is unstable, with coefficient of variance = 7.65987%.
+[07/25/2022-19:03:30] [W]   If not already in use, locking GPU clock frequency or adding --useSpinWait may improve the stability.
+[07/25/2022-19:03:30] [I] Explanations of the performance metrics are printed in the verbose logs.
 ```
 
 3. for the TF32 throughput:
 
 ```shell
-trtexec --loadEngine=efficientnet_b4_ns.TF32.engine --batch=8192 --streams=8 --verbose --avgRuns=10
-[07/24/2022-23:00:20] [I] === Performance summary ===
-[07/24/2022-23:00:20] [I] Throughput: 41712.7 qps
-[07/24/2022-23:00:20] [I] Latency: min = 774.744 ms, max = 1690.64 ms, mean = 1507.59 ms, median = 1587.07 ms, percentile(99%) = 1690.64 ms
-[07/24/2022-23:00:20] [I] Enqueue Time: min = 0.755859 ms, max = 598.609 ms, mean = 8.41466 ms, median = 0.806152 ms, percentile(99%) = 598.609 ms
-[07/24/2022-23:00:20] [I] H2D Latency: min = 16.7282 ms, max = 115.398 ms, mean = 41.6897 ms, median = 17.2109 ms, percentile(99%) = 115.398 ms
-[07/24/2022-23:00:20] [I] GPU Compute Time: min = 739.689 ms, max = 1585.34 ms, mean = 1465.88 ms, median = 1565.21 ms, percentile(99%) = 1585.34 ms
-[07/24/2022-23:00:20] [I] D2H Latency: min = 0.00585938 ms, max = 0.0732422 ms, mean = 0.0203981 ms, median = 0.015625 ms, percentile(99%) = 0.0732422 ms
-[07/24/2022-23:00:20] [I] Total Host Walltime: 15.5149 s
-[07/24/2022-23:00:20] [I] Total GPU Compute Time: 115.804 s
-[07/24/2022-23:00:20] [W] * GPU compute time is unstable, with coefficient of variance = 16.5552%.
-[07/24/2022-23:00:20] [W]   If not already in use, locking GPU clock frequency or adding --useSpinWait may improve the stability.
-[07/24/2022-23:00:20] [I] Explanations of the performance metrics are printed in the verbose logs.
+trtexec --loadEngine=classifier-sim.TF32.engine --batch=8192 --streams=8 --verbose --avgRuns=10
+ [07/25/2022-19:03:57] [I] Throughput: 2.5548e+06 qps
+[07/25/2022-19:03:57] [I] Latency: min = 9.12402 ms, max = 53.5422 ms, mean = 16.5924 ms, median = 11.104 ms, percentile(99%) = 46.9604 ms
+[07/25/2022-19:03:57] [I] Enqueue Time: min = 0.00976562 ms, max = 0.0761719 ms, mean = 0.0148766 ms, median = 0.0108643 ms, percentile(99%) = 0.0613403 ms
+[07/25/2022-19:03:57] [I] H2D Latency: min = 3.11755 ms, max = 46.7709 ms, mean = 9.2178 ms, median = 3.23969 ms, percentile(99%) = 39.5508 ms
+[07/25/2022-19:03:57] [I] GPU Compute Time: min = 5.94873 ms, max = 12.0564 ms, mean = 7.33046 ms, median = 7.1571 ms, percentile(99%) = 9.20398 ms
+[07/25/2022-19:03:57] [I] D2H Latency: min = 0.00537109 ms, max = 0.0720215 ms, mean = 0.0441205 ms, median = 0.0429688 ms, percentile(99%) = 0.0669861 ms
+[07/25/2022-19:03:57] [I] Total Host Walltime: 3.0526 s
+[07/25/2022-19:03:57] [I] Total GPU Compute Time: 6.97859 s
+[07/25/2022-19:03:57] [W] * GPU compute time is unstable, with coefficient of variance = 7.52974%.
+[07/25/2022-19:03:57] [W]   If not already in use, locking GPU clock frequency or adding --useSpinWait may improve the stability.
+[07/25/2022-19:03:57] [I] Explanations of the performance metrics are printed in the verbose logs.
+[07/25/2022-19:03:57] [V] 
 ```
 
 4. for the FP32 throughput:
 
 ```shell
-trtexec --loadEngine=efficientnet_b4_ns.FP32.engine --batch=8192 --streams=8 --verbose --avgRuns=10
-[07/24/2022-23:01:35] [I] === Performance summary ===
-[07/24/2022-23:01:35] [I] Throughput: 36973.1 qps
-[07/24/2022-23:01:35] [I] Latency: min = 570.521 ms, max = 1896.41 ms, mean = 1649.98 ms, median = 1772.86 ms, percentile(99%) = 1896.41 ms
-[07/24/2022-23:01:35] [I] Enqueue Time: min = 1.15918 ms, max = 727.728 ms, mean = 10.4853 ms, median = 1.21777 ms, percentile(99%) = 727.728 ms
-[07/24/2022-23:01:35] [I] H2D Latency: min = 16.8677 ms, max = 114.881 ms, mean = 37.5984 ms, median = 17.2188 ms, percentile(99%) = 114.881 ms
-[07/24/2022-23:01:35] [I] GPU Compute Time: min = 553.484 ms, max = 1781.69 ms, mean = 1612.36 ms, median = 1750.15 ms, percentile(99%) = 1781.69 ms
-[07/24/2022-23:01:35] [I] D2H Latency: min = 0.00585938 ms, max = 0.0794678 ms, mean = 0.0206948 ms, median = 0.0175781 ms, percentile(99%) = 0.0794678 ms
-[07/24/2022-23:01:35] [I] Total Host Walltime: 17.5038 s
-[07/24/2022-23:01:35] [I] Total GPU Compute Time: 127.377 s
-[07/24/2022-23:01:35] [W] * GPU compute time is unstable, with coefficient of variance = 19.1903%.
-[07/24/2022-23:01:35] [W]   If not already in use, locking GPU clock frequency or adding --useSpinWait may improve the stability.
-[07/24/2022-23:01:35] [I] Explanations of the performance metrics are printed in the verbose logs.
-
+trtexec --loadEngine=classifier-sim.FP32.engine --batch=8192 --streams=8 --verbose --avgRuns=10
+ [07/25/2022-19:04:18] [I] Throughput: 2.54996e+06 qps
+[07/25/2022-19:04:18] [I] Latency: min = 9.11011 ms, max = 56.7799 ms, mean = 16.7815 ms, median = 11.3374 ms, percentile(99%) = 47.455 ms
+[07/25/2022-19:04:18] [I] Enqueue Time: min = 0.0098877 ms, max = 0.0678711 ms, mean = 0.0148348 ms, median = 0.0112305 ms, percentile(99%) = 0.0598145 ms
+[07/25/2022-19:04:18] [I] H2D Latency: min = 3.12762 ms, max = 49.9872 ms, mean = 9.40668 ms, median = 4.24805 ms, percentile(99%) = 40.4771 ms
+[07/25/2022-19:04:18] [I] GPU Compute Time: min = 5.95483 ms, max = 10.9875 ms, mean = 7.3315 ms, median = 7.17285 ms, percentile(99%) = 9.1684 ms
+[07/25/2022-19:04:18] [I] D2H Latency: min = 0.00561523 ms, max = 0.0722656 ms, mean = 0.0433322 ms, median = 0.0424805 ms, percentile(99%) = 0.0668182 ms
+[07/25/2022-19:04:18] [I] Total Host Walltime: 3.06161 s
+[07/25/2022-19:04:18] [I] Total GPU Compute Time: 6.98692 s
+[07/25/2022-19:04:18] [W] * GPU compute time is unstable, with coefficient of variance = 7.28868%.
+[07/25/2022-19:04:18] [W]   If not already in use, locking GPU clock frequency or adding --useSpinWait may improve the stability.
+[07/25/2022-19:04:18] [I] Explanations of the performance metrics are printed in the verbose logs.
 ```
 
 ### Accuracy evaluation
 
 ```log
-[trace] validate the tensorrt engine file using ../models/efficientnet_b4_ns.INT8.engine
-[trace] validation multi-class accuracy = 0.9062
+[trace] validate the tensorrt engine file using ../models/classifier-sim.INT8.engine
+[trace] final run loss by TensorRT: 18.15721794217825
 
-[trace] validate the tensorrt engine file using ../models/efficientnet_b4_ns.FP16.engine
-[trace] validation multi-class accuracy = 0.9031
+[trace] validate the tensorrt engine file using ../models/classifier-sim.FP16.engine
+[trace] final run loss by TensorRT: 18.15721845626831
 
-[trace] validate the tensorrt engine file using ../models/efficientnet_b4_ns.TF32.engine
-[trace] validation multi-class accuracy = 0.8844
+[trace] validate the tensorrt engine file using ../models/classifier-sim.TF32.engine
+[trace] final run loss by TensorRT: 18.157218277454376
 
-[trace] validate the tensorrt engine file using ../models/efficientnet_b4_ns.FP32.engine
-[trace] validation multi-class accuracy = 0.8812
+[trace] validate the tensorrt engine file using ../models/classifier-sim.FP32.engine
+[trace] final run loss by TensorRT: 18.157218001782894
 
 ```
 
 ### Conclusion:
 
-1. The file size of TensorRT engines don't vary too much for different date type.
-2. The FP16 has achieved best performance. The improvement can reach 22.937% (45453.9 qps vs 36973.1 qps)
-3. The FP16 quantization has little impact to the accuracy of the inference result.
+1. The file size of classifier-sim.INT8.engine is almost double as other engine files. This needs further investigation.
+2. In term of accuracy, four engines are very close, which means quantization causes negligible accuracy loss.
+3. The FP16 quantization has the best performance, which is slightly better than others.
 
 <!-- BUILIT WITH
 ### Built With
@@ -304,14 +315,15 @@ To get a local copy up and running follow these simple example steps.
 
 
 <!-- ROADMAP -->
+
 ## Roadmap
 
 - [x] Add Changelog
 - [x] Add back to top links
 - [ ] Explorer more possibility
 
-
-See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (
+and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -336,6 +348,7 @@ Don't forget to give the project a star! Thanks again!
 
 
 <!-- LICENSE -->
+
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
@@ -375,35 +388,65 @@ Use this space to list resources you find helpful and would like to give credit 
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
 [contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
+
 [contributors-url]: https://github.com/othneildrew/Best-README-Template/graphs/contributors
+
 [forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
+
 [forks-url]: https://github.com/othneildrew/Best-README-Template/network/members
+
 [stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
+
 [stars-url]: https://github.com/othneildrew/Best-README-Template/stargazers
+
 [issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
+
 [issues-url]: https://github.com/othneildrew/Best-README-Template/issues
+
 [license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
+
 [license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
+
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+
 [linkedin-url]: https://linkedin.com/in/othneildrew
+
 [product-screenshot]: images/screenshot.png
+
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
+
 [Next-url]: https://nextjs.org/
+
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+
 [React-url]: https://reactjs.org/
+
 [Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
+
 [Vue-url]: https://vuejs.org/
+
 [Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
+
 [Angular-url]: https://angular.io/
+
 [Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
+
 [Svelte-url]: https://svelte.dev/
+
 [Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
+
 [Laravel-url]: https://laravel.com
+
 [Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
+
 [Bootstrap-url]: https://getbootstrap.com
+
 [JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
+
 [JQuery-url]: https://jquery.com
+
 [TensorRT]: https://developer.nvidia.com/tensorrt
 
 <!-- data

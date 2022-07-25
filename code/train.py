@@ -14,39 +14,11 @@ from torch.utils.data import DataLoader
 from collections import OrderedDict
 from tqdm import tqdm
 
-import nn_structure
-
 pd.options.plotting.backend = "plotly"
 from torch import nn, optim
 from torch.autograd import Variable
 
-TEST = 'test'
-TRAIN = 'train'
-VAL = 'val'
-
-
-def data_transforms(phase=None):
-  if phase == TRAIN:
-
-    data_T = T.Compose([
-
-      T.Resize(size=(256, 256)),
-      T.RandomRotation(degrees=(-20, +20)),
-      T.CenterCrop(size=224),
-      T.ToTensor(),
-      T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
-  elif phase == TEST or phase == VAL:
-
-    data_T = T.Compose([
-
-      T.Resize(size=(224, 224)),
-      T.ToTensor(),
-      T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
-
-  return data_T
-
+import utility
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -54,9 +26,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def main():
   # data_dir = "../input/chest-xray-pneumonia/chest_xray/chest_xray"
   data_dir = '../data/chest_xray'
-  trainset = datasets.ImageFolder(os.path.join(data_dir, TRAIN), transform=data_transforms(TRAIN))
-  testset = datasets.ImageFolder(os.path.join(data_dir, TEST), transform=data_transforms(TEST))
-  validset = datasets.ImageFolder(os.path.join(data_dir, VAL), transform=data_transforms(VAL))
+
+  _train_trans = utility.data_transforms(utility.TRAIN)
+  _test_trans = utility.data_transforms(utility.TEST)
+  _val_trans = utility.data_transforms(utility.VAL)
+  trainset = datasets.ImageFolder(os.path.join(data_dir, utility.TRAIN), transform=_train_trans)
+  testset = datasets.ImageFolder(os.path.join(data_dir, utility.TEST), transform=_test_trans)
+  validset = datasets.ImageFolder(os.path.join(data_dir, utility.VAL), transform=_val_trans)
 
   class_names = trainset.classes
   print(class_names)
@@ -81,9 +57,9 @@ def main():
   print(f"[trace] prepare model to train")
   print(f"[trace] current model summary:")
   from torchsummary import summary
-  summary(nn_structure.classify().cuda(), (images.shape[1], images.shape[2], images.shape[3]))
+  summary(utility.classify().cuda(), (images.shape[1], images.shape[2], images.shape[3]))
 
-  model = nn_structure.classify()
+  model = utility.classify()
   # defining the optimizer
   optimizer = optim.Adam(model.parameters(), lr=0.01)
   # defining the loss function

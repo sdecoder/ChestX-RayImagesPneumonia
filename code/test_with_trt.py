@@ -28,7 +28,6 @@ from torchvision.utils import make_grid
 from torch.utils.data import DataLoader, Dataset
 from collections import OrderedDict
 from tqdm import tqdm
-import nn_structure
 from os import listdir
 from os.path import isfile, join
 
@@ -58,20 +57,7 @@ class HostDeviceMem(object):
 
 
 def allocate_buffers_for_encoder(engine, batch_size):
-  """Allocates host and device buffer for TRT engine inference.
-  This function is similair to the one in common.py, but
-  converts network outputs (which are np.float32) appropriately
-  before writing them to Python buffer. This is needed, since
-  TensorRT plugins doesn't support output type description, and
-  in our particular case, we use NMS plugin as network output.
-  Args:
-      engine (trt.ICudaEngine): TensorRT engine
-  Returns:
-      inputs [HostDeviceMem]: engine input memory
-      outputs [HostDeviceMem]: engine output memory
-      bindings [int]: buffer to device bindings
-      stream (cuda.Stream): cuda stream for engine inference synchronization
-  """
+
   print('[trace] reach func@allocate_buffers')
   inputs = []
   outputs = []
@@ -93,7 +79,7 @@ def allocate_buffers_for_encoder(engine, batch_size):
     _binding_shape = engine.get_binding_shape(binding)
     _volume = trt.volume(_binding_shape)
     #size = _volume * engine.max_batch_size
-    size = abs(_volume * batch_size) # dynamic batch size
+    size = abs(_volume) # dynamic batch size
     print(f'[trace] current binding size: {size}')
     dtype = binding_to_type[str(binding)]
     # Allocate host and device buffers
@@ -135,7 +121,7 @@ def gpu_array_test(device_mem, batch_size):
 def test(engine):
 
   print(f'[trace] start to run on test data')
-  batch_size = 64
+  batch_size = 16
   test_dataset_normal_path = '../data/chest_xray/test'
   testset = datasets.ImageFolder(os.path.join(test_dataset_normal_path), transform=data_transforms())
   testloader = DataLoader(testset, batch_size=batch_size, shuffle=True)
@@ -180,11 +166,13 @@ def test(engine):
 
 def test_using_trt():
 
+  import utility
   trt.init_libnvinfer_plugins(TRT_LOGGER, '')
   # Initialize runtime needed for loading TensorRT engine from file
   trt_runtime = trt.Runtime(TRT_LOGGER)
   # TRT engine placeholder
-  trt_engine_path = './classify-sim.engine'
+  _mode = utility.CalibratorMode.FP32
+  trt_engine_path = f'../models/classifier-sim.{_mode.name}.engine'
   if (os.path.exists(trt_engine_path) == False):
     print(f'[trace] engine file {trt_engine_path} does not exist, exit')
     exit(-1)
