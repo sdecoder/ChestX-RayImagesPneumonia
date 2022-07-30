@@ -15,12 +15,12 @@ from tqdm import tqdm
 import argparse
 
 import onnx
-import tensorrt as trt
+#import tensorrt as trt
 import os
 import torch
 import torchvision
-import pycuda.driver as cuda
-import pycuda.autoinit
+#import pycuda.driver as cuda
+#import pycuda.autoinit
 from PIL import Image
 import numpy as np
 import onnx
@@ -171,7 +171,7 @@ class CalibratorMode(Enum):
   TF32 = 2
   FP32 = 3
 
-
+'''
 class Calibrator(trt.IInt8EntropyCalibrator2):
 
   def __init__(self, training_loader, cache_file, element_bytes, batch_size=16, ):
@@ -216,6 +216,8 @@ class Calibrator(trt.IInt8EntropyCalibrator2):
     print(f'[trace] Calibrator: write_calibration_cache: {cache}')
     with open(self.cache_file, "wb") as f:
       f.write(cache)
+
+'''
 
 
 def GiB(val):

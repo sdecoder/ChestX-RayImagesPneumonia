@@ -127,9 +127,13 @@ Software platform:
 
 The model[tf_efficientnet_b4_ns] structure is list as following:
 
-This model is trained using Pytorch ROCm.
+This model is trained using Pytorch-ROCm.
 The training result can reach 99% precision.
 After training, the weight is saved to the .pt file.
+* O0 level: average runtime = 49.1722163 seconds
+* O1 level: average runtime = 48.22872197 seconds
+* O2 level: average runtime =  46.96123036 seconds
+* O3 level: average runtime = 47.74122603 seconds
 
 ### Export to ONNX file
 
@@ -255,7 +259,7 @@ trtexec --loadEngine=classifier-sim.TF32.engine --batch=8192 --streams=8 --verbo
 [07/25/2022-19:03:57] [W] * GPU compute time is unstable, with coefficient of variance = 7.52974%.
 [07/25/2022-19:03:57] [W]   If not already in use, locking GPU clock frequency or adding --useSpinWait may improve the stability.
 [07/25/2022-19:03:57] [I] Explanations of the performance metrics are printed in the verbose logs.
-[07/25/2022-19:03:57] [V] 
+[07/25/2022-19:03:57] [V]
 ```
 
 4. for the FP32 throughput:
@@ -277,20 +281,13 @@ trtexec --loadEngine=classifier-sim.FP32.engine --batch=8192 --streams=8 --verbo
 
 ### Accuracy evaluation
 
-```log
-[trace] validate the tensorrt engine file using ../models/classifier-sim.INT8.engine
-[trace] final run loss by TensorRT: 18.15721794217825
 
-[trace] validate the tensorrt engine file using ../models/classifier-sim.FP16.engine
-[trace] final run loss by TensorRT: 18.15721845626831
+* Run loss on test dataset for classifier-sim.INT8.engine=18.15721794217825
+* Run loss on test dataset for classifier-sim.FP16.engine=18.15721845626831
+* Run loss on test dataset for classifier-sim.TF32.engine=18.157218277454376
+* Run loss on test dataset for classifier-sim.FP32.engine=18.157218001782894
 
-[trace] validate the tensorrt engine file using ../models/classifier-sim.TF32.engine
-[trace] final run loss by TensorRT: 18.157218277454376
 
-[trace] validate the tensorrt engine file using ../models/classifier-sim.FP32.engine
-[trace] final run loss by TensorRT: 18.157218001782894
-
-```
 
 ### Conclusion:
 

@@ -7,6 +7,7 @@ import os
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
 from alive_progress import alive_bar
+from apex import amp
 from torch import nn, optim
 from torchvision import transforms as T, datasets, models
 from torchvision.utils import make_grid
@@ -88,11 +89,15 @@ def main():
     best_loss = np.inf
     best_model_name = None
 
+    opt_level = 'O0'
+    model, optimizer = amp.initialize(model, optimizer, opt_level=opt_level)
+
     with alive_bar(epochs, dual_line=True, title='Epochs', force_tty = True) as bar:
       for i in range(epochs):
 
         bar()
         running_loss = 0
+        start = time.time()
         for images, labels in trainloader:
 
           # Changing images to cuda for gpu
@@ -110,7 +115,9 @@ def main():
 
           # This is where the model learns by backpropagating
           # accumulates the loss for mini batch
-          loss.backward()
+          with amp.scale_loss(loss, optimizer) as scaled_loss:
+            scaled_loss.backward()
+          #loss.backward()
 
           # And optimizes its weights here
           optimizer.step()
@@ -129,6 +136,9 @@ def main():
 
             best_model_name = f"model_{best_epoch}th_epoch_{running_loss}_loss.pth"
             torch.save(model.state_dict(), best_model_name)
+
+        delta = time.time() - start
+        print(f'[trace] time used in epoch {i} = {delta} seconds')
 
   pass
 
